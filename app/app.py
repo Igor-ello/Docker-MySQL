@@ -1,13 +1,19 @@
-from typing import Optional
-
 from flask import Flask, request, jsonify
 import mysql.connector
-from mysql.connector.abstracts import MySQLCursorAbstract, MySQLConnectionAbstract
-from mysql.connector.pooling import PooledMySQLConnection
 
 # Настройки подключения к MySQL
 db_config = {
     'host': 'mysql-db',  # Имя сервиса MySQL из docker-compose.yml
+    'user': 'root',
+    'password': 'qwerty',
+    'database': 'testdb'
+}
+
+import mysql.connector
+
+# Настройки подключения к MySQL
+db_config = {
+    'host': 'mysql-db',
     'user': 'root',
     'password': 'qwerty',
     'database': 'testdb'
@@ -57,4 +63,27 @@ def get_users():
 
 
 if __name__ == '__main__':
+    try:
+        connector = mysql.connector.connect(**db_config)
+        cursor = connector.cursor()
+
+        # Запрос на создание таблицы
+        create_table_query = """
+        CREATE TABLE users (
+            id INT AUTO_INCREMENT PRIMARY KEY,
+            name VARCHAR(255) NOT NULL,
+            age INT NOT NULL
+        );
+        """
+
+        cursor.execute(create_table_query)
+        connector.commit()
+        print("Таблица 'users' успешно создана.")
+    except Exception as e:
+        print(f"Ошибка: {str(e)}")
+    finally:
+        if connector.is_connected():
+            cursor.close()
+            connector.close()
+
     app.run(host='0.0.0.0', port=5000)
